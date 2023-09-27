@@ -1,4 +1,4 @@
-module gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter
+module github.com/UKHomeOffice/acp-opensearch-alias-exporter
 
 go 1.20
 

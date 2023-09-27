@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/retriever"
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/updater"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/models"
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/retriever"
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/updater"
 	"log"
 	"net/http"
 	"os"
@@ -12,8 +12,8 @@ import (
 )
 
 func getCurrentAliasStatuses() (models.AliasStatuses, error) {
-	indexGetter := retriever.NewIndexGetter(os.Getenv("host"), os.Getenv("username"), os.Getenv("password"), retriever.HttpGet)
-	aliasGetter := retriever.NewAliasGetter(os.Getenv("host"), os.Getenv("username"), os.Getenv("password"), retriever.HttpGet)
+	indexGetter := retriever.NewIndexGetter(os.Getenv("OPENSEARCH_HOST"), os.Getenv("USERNAME"), os.Getenv("PASSWORD"), retriever.HttpGet)
+	aliasGetter := retriever.NewAliasGetter(os.Getenv("OPENSEARCH_HOST"), os.Getenv("USERNAME"), os.Getenv("PASSWORD"), retriever.HttpGet)
 
 	writeIndexes, err := indexGetter.GetWriteIndexes()
 	if err != nil {

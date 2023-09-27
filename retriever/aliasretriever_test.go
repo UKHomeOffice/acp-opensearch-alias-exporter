@@ -1,7 +1,7 @@
 package retriever
 
 import (
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/models"
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
 	"testing"
 )
 

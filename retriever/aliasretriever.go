@@ -3,7 +3,7 @@ package retriever
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/models"
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
 )
 
 type Stats struct {

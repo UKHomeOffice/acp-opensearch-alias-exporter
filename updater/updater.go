@@ -1,9 +1,9 @@
 package updater
 
 import (
+	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter/models"
 )
 
 type PrometheusUpdater struct {
@@ -17,7 +17,7 @@ func NewPrometheusUpdater(namespace, name, help string) models.Updater {
 			Name:      name,
 			Help:      help,
 		},
-		[]string{"domain"},
+		[]string{"namespace"},
 	)
 	return &PrometheusUpdater{gaugeVec: promAliasRate}
 }
