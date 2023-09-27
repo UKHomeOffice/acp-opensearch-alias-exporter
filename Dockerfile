@@ -9,7 +9,7 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go install -v \
             gitlab.digital.homeoffice.gov.uk/acp/opensearch-reporter
 
-FROM alpine:3.17
+FROM alpine:3.18
 RUN apk --no-cache add ca-certificates
 
 RUN addgroup -g 1000 -S app && \
