@@ -7,6 +7,9 @@ import (
 )
 
 type Stats struct {
+	Shards struct {
+        Failed int `json:"failed"`
+    } `json:"_shards"`
 	All struct {
 		Primaries struct {
 			Docs struct {
@@ -35,6 +38,7 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 
 	alias := models.AliasStatus{
 		Count:  stats.All.Primaries.Docs.Count,
+		Failed: stats.Shards.Failed > 0,
 		Index:  index,
 		Name:   name,
 		Getter: a,
