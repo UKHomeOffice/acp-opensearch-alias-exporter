@@ -5,9 +5,14 @@ import (
 	"testing"
 )
 
-func TestAliasgetter_GetAlias(t *testing.T) {
+func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 	getter := func(string, string, string) ([]byte, error) {
 		return []byte(`{
+	"_shards": {
+		"total": 1,
+		"succesful": 1,
+		"failed": 0
+	},
 	"_all": {
 		"primaries": {
 			"docs": {
@@ -28,6 +33,45 @@ func TestAliasgetter_GetAlias(t *testing.T) {
 
 	if alias.Count != 27178086 {
 		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
+	}
+
+	if alias.Failed {
+		t.Error("Error. Did not return expected Failed value. Returned: ", alias.Failed, " expected false")
+	}
+}
+
+func TestAliasgetter_GetAliasFailed(t *testing.T) {
+	getter := func(string, string, string) ([]byte, error) {
+		return []byte(`{
+	"_shards": {
+		"total": 1,
+		"succesful": 1,
+		"failed": 1
+	},
+	"_all": {
+		"primaries": {
+			"docs": {
+				"count": 27178086
+			}
+		}
+	}
+}`), nil
+	}
+
+	a := NewAliasGetter("foo", "bar", "asd", getter)
+
+	alias, err := a.GetAlias("foo-1", "foo")
+
+	if err != nil {
+		t.Error("Error while getting test alias.", err.Error())
+	}
+
+	if alias.Count != 27178086 {
+		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
+	}
+
+	if !alias.Failed {
+		t.Error("Error. Did not return expected Failed value. Returned: ", alias.Failed, " expected true")
 	}
 }
 
