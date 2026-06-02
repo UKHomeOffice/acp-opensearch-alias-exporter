@@ -4,7 +4,7 @@ This is a Prometheus exporter which exports the metric opensearch_alias_rate{nam
 
 What this does is:
 1. Get list of Aliases from Opensearch
-2. Gets the stats of the write index of each Alias
+2. Gets the [stats](https://docs.opensearch.org/latest/api-reference/index-apis/stats/) of the write index of each Alias
 3. Waits a minute
 4. Compares the stats of the current write index with it before
 5. Output this as a Prometheus metrics
