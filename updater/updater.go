@@ -37,3 +37,15 @@ func (p *PrometheusUpdater) UpdateRolloverHealth(aliasStatuses models.AliasStatu
 		p.gaugeVec.WithLabelValues(aliasStatus.Name).Set(float64(health))
 	}
 }
+
+func (p *PrometheusUpdater) UpdateShardHealth(aliasStatuses models.AliasStatuses) {
+	for _, aliasStatus := range aliasStatuses {
+		p.gaugeVec.WithLabelValues(aliasStatus.Name).Set(float64(aliasStatus.FailedShards))
+	}
+}
+
+func (p *PrometheusUpdater) UpdateIndexOperationHealth(aliasStatuses models.AliasStatuses) {
+	for _, aliasStatus := range aliasStatuses {
+		p.gaugeVec.WithLabelValues(aliasStatus.Name).Set(float64(aliasStatus.FailedIndexOperations))
+	}
+}

@@ -57,7 +57,7 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 
 	alias := models.AliasStatus{
 		Count:  stats.All.Primaries.Docs.Count,
-		HasFailedShard: stats.Shards.Failed > 0,
+		FailedShards: stats.Shards.Failed,
 		FailedIndexOperations: stats.All.Primaries.Indexing.IndexFailed,
 		RolloverAttemptFailed: ism.Action.Failed,
 		Index:  index,
