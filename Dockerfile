@@ -17,6 +17,6 @@ RUN addgroup -g 1000 -S app && \
 
 USER 1000
 
-COPY --from=builder /go/bin/acp-opensearch-alias-exporter /acp-opensearch-alias-exporter
+COPY --from=builder --chown=app:app /go/bin/acp-opensearch-alias-exporter /acp-opensearch-alias-exporter
 CMD ["/acp-opensearch-alias-exporter"]
 
