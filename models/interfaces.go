@@ -1,9 +1,11 @@
 package models
 
 type Updater interface {
-	Update([]CountRate)
+	UpdateCountRates([]CountRate)
+	UpdateRolloverHealth(aliasStatuses AliasStatuses)
 }
 
 type AliasGetter interface {
 	GetAlias(index string, name string) (AliasStatus, error)
+	
 }
