@@ -15,8 +15,18 @@ type Stats struct {
 			Docs struct {
 				Count int `json:"count"`
 			} `json:"docs"`
+			Indexing struct {
+                IndexFailed int `json:"index_failed"`
+            } `json:"indexing"`
 		} `json:"primaries"`
 	} `json:"_all"`
+}
+
+type ISM struct {
+	Action struct {
+		Name string `json:"name"`
+		Failed bool `json:"failed"`
+	} `json:"action"`
 }
 
 type aliasgetter struct {
@@ -27,18 +37,29 @@ type aliasgetter struct {
 }
 
 func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, error) {
-	url := fmt.Sprintf("%s/%s/_stats", a.host, index)
-	body, err := a.getter(url, a.username, a.password)
+	stats_url := fmt.Sprintf("%s/%s/_stats", a.host, index)
+	stats_body, stats_err := a.getter(stats_url, a.username, a.password)
 
 	var stats Stats
-	err = json.Unmarshal(body, &stats)
-	if err != nil {
-		return models.AliasStatus{}, err
+	stats_err = json.Unmarshal(stats_body, &stats)
+	if stats_err != nil {
+		return models.AliasStatus{}, stats_err
+	}
+
+	ism_url := fmt.Sprintf("%s/_plugins/explain/%s", a.host, index)
+	ism_body, ism_err := a.getter(ism_url, a.username, a.password)
+
+	var ism ISM
+	ism_err = json.Unmarshal(ism_body, &ism)
+	if ism_err != nil {
+		return models.AliasStatus{}, ism_err
 	}
 
 	alias := models.AliasStatus{
 		Count:  stats.All.Primaries.Docs.Count,
-		Failed: stats.Shards.Failed > 0,
+		HasFailedShard: stats.Shards.Failed > 0,
+		FailedIndexOperations: stats.All.Primaries.Indexing.IndexFailed,
+		RolloverAttemptFailed: ism.Action.Failed,
 		Index:  index,
 		Name:   name,
 		Getter: a,
