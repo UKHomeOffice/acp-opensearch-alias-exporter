@@ -39,7 +39,8 @@ func start() {
 		panic(err)
 	}
 
-	prometheusUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rate", "rate of change of alias count")
+	prometheusAliasRateUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rate", "rate of change of alias count")
+	prometheusRolloverHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rollover_health", "tracks index rollover failures/health")
 
 	t := time.NewTicker(time.Minute)
 	for {
@@ -48,12 +49,13 @@ func start() {
 		if err != nil {
 			panic(err)
 		}
+		prometheusRolloverHealthUpdater.UpdateRolloverHealth(newAliasStatuses)
 
 		countRates, err := models.GetCountChanges(oldAliasStatuses, newAliasStatuses)
 		if err != nil {
 			log.Println("Error getting count rates", err)
 		}
-		prometheusUpdater.Update(countRates)
+		prometheusAliasRateUpdater.UpdateCountRates(countRates)
 
 		oldAliasStatuses = newAliasStatuses
 	}
