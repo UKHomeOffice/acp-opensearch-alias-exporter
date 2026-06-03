@@ -5,7 +5,7 @@ import "errors"
 type AliasStatus struct {
 	Count  int
 	Size   int
-	HasFailedShard bool
+	FailedShards int
 	FailedIndexOperations int
 	RolloverAttemptFailed bool
 	Index  string

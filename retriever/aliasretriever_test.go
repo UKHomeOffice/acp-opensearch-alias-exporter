@@ -52,8 +52,8 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 		t.Error("Error. Did not return expected Count value. Returned:", alias.Count, " expected 27178086")
 	}
 
-	if alias.HasFailedShard {
-		t.Error("Error. Did not return expected HasFailedShard value. Returned: ", alias.HasFailedShard, " expected false")
+	if alias.FailedShards != 0 {
+		t.Error("Error. Did not return expected FailedShards value. Returned: ", alias.FailedShards, " expected 0")
 	}
 
 	if alias.FailedIndexOperations != 0{
@@ -112,11 +112,11 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
 	}
 
-	if !alias.HasFailedShard {
-		t.Error("Error. Did not return expected HasFailedShard value. Returned: ", alias.HasFailedShard, " expected true")
+	if alias.FailedShards != 1 {
+		t.Error("Error. Did not return expected FailedShards value. Returned: ", alias.FailedShards, " expected 1")
 	}
 
-	if alias.FailedIndexOperations != 1{
+	if alias.FailedIndexOperations != 1 {
 		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 1")
 	}
 
