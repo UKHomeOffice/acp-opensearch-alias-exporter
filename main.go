@@ -42,7 +42,7 @@ func start() {
 	prometheusAliasRateUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rate", "rate of change of alias count")
 	prometheusRolloverHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rollover_health", "tracks index rollover failures/health")
 	prometheusShardHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_shard_health", "tracks unhealthy alias shards")
-	prometheusIndexOperationHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_index_operations_health", "tracks failed index operations")
+	prometheusIndexOperationHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_index_operation_health", "tracks failed index operations")
 
 	t := time.NewTicker(time.Minute)
 	for {
