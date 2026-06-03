@@ -6,8 +6,11 @@ import (
 )
 
 func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
+	callCount := 0
 	getter := func(string, string, string) ([]byte, error) {
-		return []byte(`{
+		callCount++
+		if callCount == 1 {
+			return []byte(`{
 	"_shards": {
 		"total": 1,
 		"succesful": 1,
@@ -17,9 +20,23 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 		"primaries": {
 			"docs": {
 				"count": 27178086
-			}
+			},
+			"indexing": {
+				"index_failed": 0
+			}	
 		}
 	}
+}`), nil
+		}
+		return []byte(`{
+	"action" : {
+      "name" : "rollover",
+      "start_time" : 1667411127803,
+      "index" : 0,
+      "failed" : false,
+      "consumed_retries" : 0,
+      "last_retry_time" : 0
+    }
 }`), nil
 	}
 
@@ -32,19 +49,30 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 	}
 
 	if alias.Count != 27178086 {
-		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
+		t.Error("Error. Did not return expected Count value. Returned:", alias.Count, " expected 27178086")
 	}
 
-	if alias.Failed {
-		t.Error("Error. Did not return expected Failed value. Returned: ", alias.Failed, " expected false")
+	if alias.HasFailedShard {
+		t.Error("Error. Did not return expected HasFailedShard value. Returned: ", alias.HasFailedShard, " expected false")
+	}
+
+	if alias.FailedIndexOperations != 0{
+		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 0")
+	}
+
+	if alias.RolloverAttemptFailed {
+		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected false")
 	}
 }
 
 func TestAliasgetter_GetAliasFailed(t *testing.T) {
+	callCount := 0
 	getter := func(string, string, string) ([]byte, error) {
-		return []byte(`{
+		callCount++
+		if callCount == 1 {
+			return []byte(`{
 	"_shards": {
-		"total": 1,
+		"total": 2,
 		"succesful": 1,
 		"failed": 1
 	},
@@ -52,9 +80,23 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 		"primaries": {
 			"docs": {
 				"count": 27178086
-			}
+			},
+			"indexing": {
+				"index_failed": 1
+			}	
 		}
 	}
+}`), nil
+		}
+		return []byte(`{
+	"action" : {
+      "name" : "rollover",
+      "start_time" : 1667411127803,
+      "index" : 0,
+      "failed" : true,
+      "consumed_retries" : 0,
+      "last_retry_time" : 0
+    }
 }`), nil
 	}
 
@@ -70,8 +112,16 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
 	}
 
-	if !alias.Failed {
-		t.Error("Error. Did not return expected Failed value. Returned: ", alias.Failed, " expected true")
+	if !alias.HasFailedShard {
+		t.Error("Error. Did not return expected HasFailedShard value. Returned: ", alias.HasFailedShard, " expected true")
+	}
+
+	if alias.FailedIndexOperations != 1{
+		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 1")
+	}
+
+	if !alias.RolloverAttemptFailed {
+		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected true")
 	}
 }
 
