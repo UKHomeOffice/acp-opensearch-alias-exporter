@@ -4,7 +4,7 @@ This is a Prometheus exporter, which exports the following OpenSearch health met
     - opensearch_alias_rate{namespace}
     - opensearch_alias_rollover_health{namespace}
     - opensearch_alias_shard_health{namespace}
-    - opensearch_alias_index_operation_health{namespace}
+    - opensearch_alias_index_operation_health{namespace}.
 
 What this does is:
 1. Gets list of Aliases from OpenSearch
