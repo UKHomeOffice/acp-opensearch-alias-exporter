@@ -19,7 +19,6 @@ steps:
         - pull_request
         - tag
 
-
   - name: trivy_sast
     pull: Always
     image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/trivy/client:latest
@@ -35,19 +34,6 @@ steps:
       event:
         - push      
         - pull_request
-
-  # - name: scan
-  #   image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
-  #   pull: always
-  #   environment:
-  #     IMAGE_NAME: acp-opensearch-alias-exporter:latest
-  #     TOLERATE: low
-  #   depends_on:
-  #     - build-image
-  #   when:
-  #     event:
-  #       - push
-  #       - pull_request
 
   - name: push_to_quay
     image: plugins/docker
@@ -68,9 +54,3 @@ steps:
 services:
   - name: docker
     image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
-
-  # - name: anchore-submission-server
-  #   image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
-  #   pull: always
-  #   commands:
-  #     - /run.sh server
