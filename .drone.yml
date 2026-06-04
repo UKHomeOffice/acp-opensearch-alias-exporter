@@ -12,7 +12,7 @@ steps:
     image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
     commands:
       - /usr/local/bin/wait
-      - docker build -t acp-opensearch-alias-exporter:latest .
+      - docker build --no-cache -t acp-opensearch-alias-exporter:latest .
     when:
       event:
         - push
