@@ -1,4 +1,5 @@
-FROM golang:1.20 as builder
+# Build stage
+FROM golang:1.26 AS builder
 
 WORKDIR /go/src/github.com/UKHomeOffice/acp-opensearch-alias-exporter
 
@@ -9,7 +10,10 @@ COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux go install -v \
             github.com/UKHomeOffice/acp-opensearch-alias-exporter
 
-FROM alpine:3.18
+# Runtime stage
+FROM alpine:3.22.4
+
+RUN apk --no-cache upgrade
 RUN apk --no-cache add ca-certificates
 
 RUN addgroup -g 1000 -S app && \
@@ -17,6 +21,6 @@ RUN addgroup -g 1000 -S app && \
 
 USER 1000
 
-COPY --from=builder /go/bin/acp-opensearch-alias-exporter /acp-opensearch-alias-exporter
+COPY --from=builder --chown=app:app /go/bin/acp-opensearch-alias-exporter /acp-opensearch-alias-exporter
 CMD ["/acp-opensearch-alias-exporter"]
 
