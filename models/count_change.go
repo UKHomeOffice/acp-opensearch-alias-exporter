@@ -10,7 +10,7 @@ func GetCountChanges(oldStatuses AliasStatuses, newStatuses AliasStatuses) ([]Co
 			}
 			countChanges = append(countChanges, CountRate{Alias: newStatus.Name, Total: countChange})
 		} else {
-			countChanges = append(countChanges, CountRate{Alias: newStatus.Name, Total: newStatus.Count})
+			countChanges = append(countChanges, CountRate{Alias: newStatus.Name, Total: newStatus.DocCount})
 		}
 	}
 	return countChanges, nil

@@ -7,9 +7,6 @@ import (
 )
 
 type Stats struct {
-	Shards struct {
-        Failed int `json:"failed"`
-    } `json:"_shards"`
 	All struct {
 		Primaries struct {
 			Docs struct {
@@ -38,7 +35,7 @@ type aliasgetter struct {
 
 func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, error) {
 	stats_url := fmt.Sprintf("%s/%s/_stats", a.host, index)
-	stats_body, stats_err := a.getter(stats_url, a.username, a.password)
+	stats_body, stats_err := a.getter(stats_url, a.username, a.password) // example response: https://docs.opensearch.org/2.19/api-reference/index-apis/stats/#example-response
 
 	var stats Stats
 	stats_err = json.Unmarshal(stats_body, &stats)
@@ -47,17 +44,25 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 	}
 
 	ism_url := fmt.Sprintf("%s/_plugins/_ism/explain/%s", a.host, index)
-	ism_body, ism_err := a.getter(ism_url, a.username, a.password)
+	ism_body, err := a.getter(ism_url, a.username, a.password) // example response: https://docs.opensearch.org/2.19/im-plugin/ism/api/#example-response-12
+	if err != nil {
+		return models.AliasStatus{}, err
+	}
+
+	var ismResponse map[string]json.RawMessage
+	if err := json.Unmarshal(ism_body, &ismResponse); err != nil {
+		return models.AliasStatus{}, err
+	}
 
 	var ism ISM
-	ism_err = json.Unmarshal(ism_body, &ism)
-	if ism_err != nil {
-		return models.AliasStatus{}, ism_err
+	if raw, ok := ismResponse[index]; ok {
+		if err := json.Unmarshal(raw, &ism); err != nil {
+			return models.AliasStatus{}, err
+		}
 	}
 
 	alias := models.AliasStatus{
-		Count:  stats.All.Primaries.Docs.Count,
-		FailedShards: stats.Shards.Failed,
+		DocCount:  stats.All.Primaries.Docs.Count,
 		FailedIndexOperations: stats.All.Primaries.Indexing.IndexFailed,
 		RolloverAttemptFailed: ism.Action.Failed,
 		Index:  index,

@@ -11,33 +11,30 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 		callCount++
 		if callCount == 1 {
 			return []byte(`{
-	"_shards": {
-		"total": 1,
-		"succesful": 1,
-		"failed": 0
-	},
-	"_all": {
-		"primaries": {
-			"docs": {
-				"count": 27178086
-			},
-			"indexing": {
-				"index_failed": 0
-			}	
-		}
-	}
-}`), nil
+				"_all": {
+					"primaries": {
+						"docs": {
+							"count": 27178086
+						},
+						"indexing": {
+							"index_failed": 0
+						}	
+					}
+				}
+			}`), nil
 		}
 		return []byte(`{
-	"action" : {
-      "name" : "rollover",
-      "start_time" : 1667411127803,
-      "index" : 0,
-      "failed" : false,
-      "consumed_retries" : 0,
-      "last_retry_time" : 0
-    }
-}`), nil
+			"foo-1": {
+				"action" : {
+					"name" : "rollover",
+					"start_time" : 1667411127803,
+					"index" : 0,
+					"failed" : false,
+					"consumed_retries" : 0,
+					"last_retry_time" : 0
+				}
+			}
+		}`), nil
 	}
 
 	a := NewAliasGetter("foo", "bar", "asd", getter)
@@ -48,12 +45,8 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 		t.Error("Error while getting test alias.", err.Error())
 	}
 
-	if alias.Count != 27178086 {
-		t.Error("Error. Did not return expected Count value. Returned:", alias.Count, " expected 27178086")
-	}
-
-	if alias.FailedShards != 0 {
-		t.Error("Error. Did not return expected FailedShards value. Returned: ", alias.FailedShards, " expected 0")
+	if alias.DocCount != 27178086 {
+		t.Error("Error. Did not return expected Count value. Returned:", alias.DocCount, " expected 27178086")
 	}
 
 	if alias.FailedIndexOperations != 0{
@@ -71,33 +64,30 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 		callCount++
 		if callCount == 1 {
 			return []byte(`{
-	"_shards": {
-		"total": 2,
-		"succesful": 1,
-		"failed": 1
-	},
-	"_all": {
-		"primaries": {
-			"docs": {
-				"count": 27178086
-			},
-			"indexing": {
-				"index_failed": 1
-			}	
-		}
-	}
-}`), nil
+				"_all": {
+					"primaries": {
+						"docs": {
+							"count": 27178086
+						},
+						"indexing": {
+							"index_failed": 1
+						}	
+					}
+				}
+			}`), nil
 		}
 		return []byte(`{
-	"action" : {
-      "name" : "rollover",
-      "start_time" : 1667411127803,
-      "index" : 0,
-      "failed" : true,
-      "consumed_retries" : 0,
-      "last_retry_time" : 0
-    }
-}`), nil
+			"foo-1": {
+				"action" : {
+					"name" : "rollover",
+					"start_time" : 1667411127803,
+					"index" : 0,
+					"failed" : true,
+					"consumed_retries" : 0,
+					"last_retry_time" : 0
+				}
+			}
+		}`), nil
 	}
 
 	a := NewAliasGetter("foo", "bar", "asd", getter)
@@ -108,12 +98,8 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 		t.Error("Error while getting test alias.", err.Error())
 	}
 
-	if alias.Count != 27178086 {
-		t.Error("Error not the correct count got: ", alias.Count, " expected 27178086")
-	}
-
-	if alias.FailedShards != 1 {
-		t.Error("Error. Did not return expected FailedShards value. Returned: ", alias.FailedShards, " expected 1")
+	if alias.DocCount != 27178086 {
+		t.Error("Error not the correct count got: ", alias.DocCount, " expected 27178086")
 	}
 
 	if alias.FailedIndexOperations != 1 {
@@ -133,8 +119,8 @@ func TestAliasStatus_Diff_Same_Index(t *testing.T) {
 
 	ag := NewAliasGetter("foo", "bar", "asd", getter)
 
-	newStatus := models.AliasStatus{Name: "foo", Index: "bar", Count: 2, Getter: ag}
-	oldStatus := models.AliasStatus{Name: "foo", Index: "bar", Count: 1, Getter: ag}
+	newStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 2, Getter: ag}
+	oldStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 1, Getter: ag}
 
 	count, err := newStatus.Diff(oldStatus)
 	if err != nil {
@@ -162,8 +148,8 @@ func TestAliasStatus_Diff_New_Index(t *testing.T) {
 
 	ag := NewAliasGetter("foo", "bar", "asd", getter)
 
-	newStatus := models.AliasStatus{Name: "foo", Index: "bar-1", Count: 1, Getter: ag}
-	oldStatus := models.AliasStatus{Name: "foo", Index: "bar-2", Count: 2, Getter: ag}
+	newStatus := models.AliasStatus{Name: "foo", Index: "bar-1", DocCount: 1, Getter: ag}
+	oldStatus := models.AliasStatus{Name: "foo", Index: "bar-2", DocCount: 2, Getter: ag}
 
 	count, err := newStatus.Diff(oldStatus)
 	if err != nil {
@@ -182,8 +168,8 @@ func TestAliasStatus_Diff_Different_Aliases(t *testing.T) {
 
 	ag := NewAliasGetter("foo", "bar", "asd", getter)
 
-	a := models.AliasStatus{Name: "anything", Index: "bar", Count: 1, Getter: ag}
-	b := models.AliasStatus{Name: "foo", Index: "bar", Count: 2, Getter: ag}
+	a := models.AliasStatus{Name: "anything", Index: "bar", DocCount: 1, Getter: ag}
+	b := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 2, Getter: ag}
 
 	_, err := a.Diff(b)
 

@@ -5,8 +5,8 @@ import (
 )
 
 func TestGetCountChanges_same_index(t *testing.T) {
-	oldStatuses := map[string]AliasStatus{"foo": {Count: 1, Name: "foo", Index: "foo-1"}}
-	newStatuses := map[string]AliasStatus{"foo": {Count: 2, Name: "foo", Index: "foo-1"}}
+	oldStatuses := map[string]AliasStatus{"foo": {DocCount: 1, Name: "foo", Index: "foo-1"}}
+	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-1"}}
 
 	countChanges, _ := GetCountChanges(oldStatuses, newStatuses)
 	if len(countChanges) != 1 {
@@ -22,7 +22,7 @@ func TestGetCountChanges_same_index(t *testing.T) {
 
 func TestGetCountChanges_new(t *testing.T) {
 	oldStatuses := map[string]AliasStatus{}
-	newStatuses := map[string]AliasStatus{"foo": {Count: 2, Name: "foo", Index: "foo-1"}}
+	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-1"}}
 
 	countChanges, _ := GetCountChanges(oldStatuses, newStatuses)
 	if len(countChanges) != 1 {
@@ -39,11 +39,11 @@ func TestGetCountChanges_new(t *testing.T) {
 
 func TestGetCountChanges_multiple(t *testing.T) {
 	oldStatuses := map[string]AliasStatus{
-		"foo": {Count: 1, Name: "foo", Index: "foo-1"},
+		"foo": {DocCount: 1, Name: "foo", Index: "foo-1"},
 	}
 	newStatuses := map[string]AliasStatus{
-		"foo": {Count: 1, Name: "foo", Index: "foo-1"},
-		"bar": {Count: 200, Name: "bar", Index: "bar-1"},
+		"foo": {DocCount: 1, Name: "foo", Index: "foo-1"},
+		"bar": {DocCount: 200, Name: "bar", Index: "bar-1"},
 	}
 
 	countChanges, _ := GetCountChanges(oldStatuses, newStatuses)

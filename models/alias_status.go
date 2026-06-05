@@ -3,9 +3,8 @@ package models
 import "errors"
 
 type AliasStatus struct {
-	Count  int
+	DocCount  int
 	Size   int
-	FailedShards int
 	FailedIndexOperations int
 	RolloverAttemptFailed bool
 	Index  string
@@ -20,7 +19,7 @@ func (a *AliasStatus) Refresh() error {
 	if err != nil {
 		return err
 	}
-	a.Count = as.Count
+	a.DocCount = as.DocCount
 	return nil
 }
 
@@ -30,14 +29,14 @@ func (a AliasStatus) Diff(old AliasStatus) (int, error) {
 	}
 
 	if a.Index != old.Index {
-		oldCount := old.Count
+		oldCount := old.DocCount
 		err := old.Refresh()
 		if err != nil {
 			return 0, err
 		}
 
-		return (old.Count - oldCount) + a.Count, nil
+		return (old.DocCount - oldCount) + a.DocCount, nil
 	}
 
-	return a.Count - old.Count, nil
+	return a.DocCount - old.DocCount, nil
 }
