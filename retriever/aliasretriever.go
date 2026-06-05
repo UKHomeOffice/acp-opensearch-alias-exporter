@@ -46,7 +46,7 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 		return models.AliasStatus{}, stats_err
 	}
 
-	ism_url := fmt.Sprintf("%s/_plugins/explain/%s", a.host, index)
+	ism_url := fmt.Sprintf("%s/_plugins/_ism/explain/%s", a.host, index)
 	ism_body, ism_err := a.getter(ism_url, a.username, a.password)
 
 	var ism ISM
