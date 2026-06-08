@@ -11,7 +11,7 @@ type PrometheusUpdater struct {
 }
 
 func NewPrometheusUpdater(namespace, name, help string) models.Updater {
-	promAliasRate := promauto.NewGaugeVec(
+	metric := promauto.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: namespace,
 			Name:      name,
@@ -19,7 +19,7 @@ func NewPrometheusUpdater(namespace, name, help string) models.Updater {
 		},
 		[]string{"namespace"},
 	)
-	return &PrometheusUpdater{gaugeVec: promAliasRate}
+	return &PrometheusUpdater{gaugeVec: metric}
 }
 
 var HealthMap = map[string]float64{
