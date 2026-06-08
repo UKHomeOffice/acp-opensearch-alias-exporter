@@ -10,6 +10,7 @@ type AliasStatus struct {
 	Index                 string
 	Name                  string
 	Getter                AliasGetter
+	Health                string
 }
 
 type AliasStatuses map[string]AliasStatus
