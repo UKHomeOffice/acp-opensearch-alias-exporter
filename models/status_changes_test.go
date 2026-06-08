@@ -5,35 +5,74 @@ import (
 )
 
 func TestGetStatusChanges_same_index(t *testing.T) {
-	oldStatuses := map[string]AliasStatus{"foo": {DocCount: 1, Name: "foo", Index: "foo-1"}}
-	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-1"}}
+	oldStatuses := map[string]AliasStatus{"foo": {DocCount: 1, Name: "foo", Index: "foo-1", FailedIndexOperations: 2}}
+	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-1", FailedIndexOperations: 3}}
 
-	countChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
-	if len(countChanges) != 1 {
-		t.Error("Expected 1 count change, received: ", len(countChanges))
+	statusChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
+	if len(statusChanges) != 1 {
+		t.Error("Expected 1 count change, received: ", len(statusChanges))
 	}
-	if countChanges[0].DocsAdded != 1 {
-		t.Error("Expected alias count change to be 100, received: ", countChanges[0].DocsAdded)
+	if statusChanges[0].DocsAdded != 1 {
+		t.Error("Expected DocsAdded to be 1, received: ", statusChanges[0].DocsAdded)
 	}
-	if countChanges[0].Alias != "foo" {
-		t.Error("Expected first item to be alias name foo, received: ", countChanges[0].Alias)
+	if statusChanges[0].Alias != "foo" {
+		t.Error("Expected first item to be alias named foo, received: ", statusChanges[0].Alias)
+	}
+	if statusChanges[0].NewIndexOperationFailures != 1 {
+		t.Error("Expected NewIndexOperationFailures to be 1, received: ", statusChanges[0].DocsAdded)
 	}
 }
 
-func TestGetStatusChanges_new(t *testing.T) {
+type mockAliasGetter struct {
+	statusToReturn AliasStatus
+}
+
+func (m *mockAliasGetter) GetAlias(string, string) (AliasStatus, error) {
+	return m.statusToReturn, nil
+}
+
+func TestGetStatusChanges_new_index(t *testing.T) {
+	mock := &mockAliasGetter{
+		statusToReturn: AliasStatus{
+			DocCount:              2,
+			FailedIndexOperations: 3,
+		},
+	}
+	
+	oldStatuses := map[string]AliasStatus{"foo": {DocCount: 1, Name: "foo", Index: "foo-1", FailedIndexOperations: 2, Getter: mock}}
+	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-2", FailedIndexOperations: 3}}
+
+	statusChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
+
+	if len(statusChanges) != 1 {
+		t.Error("Expected 1 count change, received: ", len(statusChanges))
+	}
+
+	if statusChanges[0].DocsAdded != 3 {
+		t.Error("Expected DocsAdded to be 1, received: ", statusChanges[0].DocsAdded)
+	}
+	if statusChanges[0].Alias != "foo" {
+		t.Error("Expected first item to be alias named foo, received: ", statusChanges[0].Alias)
+	}
+	if statusChanges[0].NewIndexOperationFailures != 4 {
+		t.Error("Expected NewIndexOperationFailures to be 1, received: ", statusChanges[0].DocsAdded)
+	}
+}
+
+func TestGetStatusChanges_new_alias(t *testing.T) {
 	oldStatuses := map[string]AliasStatus{}
 	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-1"}}
 
-	countChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
-	if len(countChanges) != 1 {
-		t.Error("Expected 1 count change, received: ", len(countChanges))
+	statusChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
+	if len(statusChanges) != 1 {
+		t.Error("Expected 1 status change, received: ", len(statusChanges))
 	}
-	if countChanges[0].Alias != "foo" {
-		t.Error("Expected first item to be alias name foo, received: ", countChanges[0].Alias)
+	if statusChanges[0].Alias != "foo" {
+		t.Error("Expected first item to have alias name foo, received: ", statusChanges[0].Alias)
 	}
 
-	if countChanges[0].DocsAdded != 2 {
-		t.Error("Expected alias count change to be 100, received: ", countChanges[0].DocsAdded)
+	if statusChanges[0].DocsAdded != 2 {
+		t.Error("Expected alias DocsAdded to be 2, received: ", statusChanges[0].DocsAdded)
 	}
 }
 
@@ -46,13 +85,13 @@ func TestGetStatusChanges_multiple(t *testing.T) {
 		"bar": {DocCount: 200, Name: "bar", Index: "bar-1"},
 	}
 
-	countChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
-	if len(countChanges) != 2 {
-		t.Error("Expected 2 count change aliases, received: ", len(countChanges))
+	statusChanges, _ := GetStatusChanges(oldStatuses, newStatuses)
+	if len(statusChanges) != 2 {
+		t.Error("Expected 2 count change aliases, received: ", len(statusChanges))
 	}
 
 	checker := func(alias string) (*StatusChange, bool) {
-		for _, change := range countChanges {
+		for _, change := range statusChanges {
 			if change.Alias == alias {
 				return &change, true
 			}
