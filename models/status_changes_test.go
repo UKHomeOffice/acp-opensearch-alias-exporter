@@ -38,7 +38,7 @@ func TestGetStatusChanges_new_index(t *testing.T) {
 			FailedIndexOperations: 3,
 		},
 	}
-	
+
 	oldStatuses := map[string]AliasStatus{"foo": {DocCount: 1, Name: "foo", Index: "foo-1", FailedIndexOperations: 2, Getter: mock}}
 	newStatuses := map[string]AliasStatus{"foo": {DocCount: 2, Name: "foo", Index: "foo-2", FailedIndexOperations: 3}}
 

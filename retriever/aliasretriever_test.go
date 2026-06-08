@@ -2,11 +2,9 @@ package retriever
 
 import (
 	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
-	"testing"
 	"slices"
+	"testing"
 )
-
-
 
 func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 	callCount := 0
@@ -52,7 +50,7 @@ func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 		t.Error("Error. Did not return expected DocCount value. Returned:", alias.DocCount, " expected 27178086")
 	}
 
-	if alias.FailedIndexOperations != 0{
+	if alias.FailedIndexOperations != 0 {
 		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 0")
 	}
 

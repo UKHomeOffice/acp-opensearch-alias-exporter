@@ -13,16 +13,16 @@ type Stats struct {
 				Count int `json:"count"`
 			} `json:"docs"`
 			Indexing struct {
-                IndexFailed int `json:"index_failed"`
-            } `json:"indexing"`
+				IndexFailed int `json:"index_failed"`
+			} `json:"indexing"`
 		} `json:"primaries"`
 	} `json:"_all"`
 }
 
 type ISM struct {
 	Action struct {
-		Name string `json:"name"`
-		Failed bool `json:"failed"`
+		Name   string `json:"name"`
+		Failed bool   `json:"failed"`
 	} `json:"action"`
 }
 
@@ -62,12 +62,12 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 	}
 
 	alias := models.AliasStatus{
-		DocCount:  stats.All.Primaries.Docs.Count,
+		DocCount:              stats.All.Primaries.Docs.Count,
 		FailedIndexOperations: stats.All.Primaries.Indexing.IndexFailed,
 		RolloverAttemptFailed: ism.Action.Failed,
-		Index:  index,
-		Name:   name,
-		Getter: a,
+		Index:                 index,
+		Name:                  name,
+		Getter:                a,
 	}
 	return alias, nil
 }
