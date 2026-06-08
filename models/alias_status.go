@@ -15,7 +15,7 @@ type AliasStatus struct {
 type AliasStatuses map[string]AliasStatus
 
 
-// Refresh calls GetAlias() and updates the AliasStatus object's DocCount and FailedIndexOperations values 
+// Refresh() calls GetAlias() and updates the AliasStatus object's DocCount and FailedIndexOperations values 
 // to the latest stats for that particular index.
 // Returns:
 //      - (if err calling .GetAlias()) err from .GetAlias()

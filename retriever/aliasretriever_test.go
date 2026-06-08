@@ -3,11 +3,14 @@ package retriever
 import (
 	"github.com/UKHomeOffice/acp-opensearch-alias-exporter/models"
 	"testing"
+	"slices"
 )
+
+
 
 func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 	callCount := 0
-	getter := func(string, string, string) ([]byte, error) {
+	getter := func(url string, name string, password string) ([]byte, error) {
 		callCount++
 		if callCount == 1 {
 			return []byte(`{
@@ -111,6 +114,57 @@ func TestAliasgetter_GetAliasWithoutFailures(t *testing.T) {
 	}
 }
 
+func TestAliasgetter_GetAlias_urls_called(t *testing.T) {
+	expected_urls := []string{"foo/foo-1/_stats", "foo/_plugins/_ism/explain/foo-1"}
+	var urls_called []string
+	callCount := 0
+	getter := func(url string, name string, password string) ([]byte, error) {
+		urls_called = append(urls_called, url)
+		callCount++
+		if callCount == 1 {
+			return []byte(`{
+				"_all": {
+					"primaries": {
+						"docs": {
+							"count": 27178086
+						},
+						"indexing": {
+							"index_failed": 0
+						}	
+					}
+				}
+			}`), nil
+		}
+		return []byte(`{
+			"foo-1": {
+				"action" : {
+					"name" : "rollover",
+					"start_time" : 1667411127803,
+					"index" : 0,
+					"failed" : false,
+					"consumed_retries" : 0,
+					"last_retry_time" : 0
+				}
+			}
+		}`), nil
+	}
+
+	a := NewAliasGetter("foo", "bar", "asd", getter)
+
+	alias, err := a.GetAlias("foo-1", "foo")
+
+	if err != nil {
+		t.Error("Error while getting test alias.", err.Error())
+	}
+
+	if alias.RolloverAttemptFailed {
+		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected false")
+	}
+
+	if !slices.Equal(urls_called, expected_urls) {
+		t.Error("Error. Unexpected urls called by getter. Returned: ", urls_called, "; Expected", expected_urls)
+	}
+}
 func TestAliasStatus_GetDifference_Same_Index(t *testing.T) {
 
 	getter := func(string, string, string) ([]byte, error) {
