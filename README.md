@@ -2,9 +2,9 @@
  
 This is a Prometheus exporter, which exports the following OpenSearch health metrics every minute:
     - opensearch_index_health:
-        - 0 = all primary shards and their replicas are allocated to nodes
+        - 0 = all primary shards and their replicas are allocated to nodes (healthy)
         - 0.5 = all primary shards are allocated to nodes, but some replicas aren’t
-        - 1 = at least one primary shard is not allocated to any node
+        - 1 = at least one primary shard is not allocated to any node (unhealthy)
     - opensearch_alias_rate{namespace}: no. of docs added 
     - opensearch_rollover_attempt_health{namespace}: 0 = last rollover attempt succeeded, 1 = last rollover attempt failed
     - opensearch_index_operation_failures{namespace}: no. of new index operation failures
