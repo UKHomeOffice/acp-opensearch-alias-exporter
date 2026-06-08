@@ -1,9 +1,9 @@
 package models
 
 type Updater interface {
-	UpdateCountRates([]CountRate)
-	UpdateRolloverHealth(aliasStatuses AliasStatuses)
-	UpdateIndexOperationHealth(aliasStatuses AliasStatuses)
+	UpdateRolloverAttemptFailures(aliasStatuses AliasStatuses)
+	UpdateDocsAddedRate([]StatusChange)
+	UpdateIndexOperationFailures(statusChanges []StatusChange)
 }
 
 type AliasGetter interface {

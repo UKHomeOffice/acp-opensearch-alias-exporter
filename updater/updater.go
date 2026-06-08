@@ -22,13 +22,7 @@ func NewPrometheusUpdater(namespace, name, help string) models.Updater {
 	return &PrometheusUpdater{gaugeVec: promAliasRate}
 }
 
-func (p *PrometheusUpdater) UpdateCountRates(countRates []models.CountRate) {
-	for _, countRate := range countRates {
-		p.gaugeVec.WithLabelValues(countRate.Alias).Set(float64(countRate.Total))
-	}
-}
-
-func (p *PrometheusUpdater) UpdateRolloverHealth(aliasStatuses models.AliasStatuses) {
+func (p *PrometheusUpdater) UpdateRolloverAttemptFailures(aliasStatuses models.AliasStatuses) {
 	for _, aliasStatus := range aliasStatuses {
 		health := 0
 		if aliasStatus.RolloverAttemptFailed {
@@ -38,8 +32,14 @@ func (p *PrometheusUpdater) UpdateRolloverHealth(aliasStatuses models.AliasStatu
 	}
 }
 
-func (p *PrometheusUpdater) UpdateIndexOperationHealth(aliasStatuses models.AliasStatuses) {
-	for _, aliasStatus := range aliasStatuses {
-		p.gaugeVec.WithLabelValues(aliasStatus.Name).Set(float64(aliasStatus.FailedIndexOperations))
+func (p *PrometheusUpdater) UpdateDocsAddedRate(statusChanges []models.StatusChange) {
+	for _, statusChange := range statusChanges {
+		p.gaugeVec.WithLabelValues(statusChange.Alias).Set(float64(statusChange.DocsAdded))
+	}
+}
+
+func (p *PrometheusUpdater) UpdateIndexOperationFailures(statusChanges []models.StatusChange) {
+	for _, statusChange := range statusChanges {
+		p.gaugeVec.WithLabelValues(statusChange.Alias).Set(float64(statusChange.NewIndexOperationFailures))
 	}
 }

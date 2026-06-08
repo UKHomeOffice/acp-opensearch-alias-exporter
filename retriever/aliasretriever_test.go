@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
+func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 	callCount := 0
 	getter := func(string, string, string) ([]byte, error) {
 		callCount++
@@ -46,7 +46,7 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 	}
 
 	if alias.DocCount != 27178086 {
-		t.Error("Error. Did not return expected Count value. Returned:", alias.DocCount, " expected 27178086")
+		t.Error("Error. Did not return expected DocCount value. Returned:", alias.DocCount, " expected 27178086")
 	}
 
 	if alias.FailedIndexOperations != 0{
@@ -58,7 +58,7 @@ func TestAliasgetter_GetAliasNotFailed(t *testing.T) {
 	}
 }
 
-func TestAliasgetter_GetAliasFailed(t *testing.T) {
+func TestAliasgetter_GetAliasWithoutFailures(t *testing.T) {
 	callCount := 0
 	getter := func(string, string, string) ([]byte, error) {
 		callCount++
@@ -99,7 +99,7 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 	}
 
 	if alias.DocCount != 27178086 {
-		t.Error("Error not the correct count got: ", alias.DocCount, " expected 27178086")
+		t.Error("Error not the correct DocCount got: ", alias.DocCount, " expected 27178086")
 	}
 
 	if alias.FailedIndexOperations != 1 {
@@ -111,7 +111,7 @@ func TestAliasgetter_GetAliasFailed(t *testing.T) {
 	}
 }
 
-func TestAliasStatus_Diff_Same_Index(t *testing.T) {
+func TestAliasStatus_GetDifference_Same_Index(t *testing.T) {
 
 	getter := func(string, string, string) ([]byte, error) {
 		return []byte(`{}`), nil
@@ -119,31 +119,35 @@ func TestAliasStatus_Diff_Same_Index(t *testing.T) {
 
 	ag := NewAliasGetter("foo", "bar", "asd", getter)
 
-	newStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 2, Getter: ag}
-	oldStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 1, Getter: ag}
+	newStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 2, Getter: ag, FailedIndexOperations: 3}
+	oldStatus := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 1, Getter: ag, FailedIndexOperations: 2}
 
-	count, err := newStatus.Diff(oldStatus)
+	difference, err := newStatus.GetDifference(oldStatus)
 	if err != nil {
-		t.Error("Error diffing: ", err)
+		t.Error("Error during GetDifference: ", err)
 	}
 
-	if count != 1 {
-		t.Error("Incorrect count diff, expected ", 1, "received: ", count)
+	if difference.Docs != 1 {
+		t.Error("Incorrect Docs difference, expected ", 1, "received: ", difference.Docs)
+	}
+
+	if difference.FailedIndexOperations != 1 {
+		t.Error("Incorrect FailedIndexOperations Difference, expected ", 1, "received: ", difference.FailedIndexOperations)
 	}
 }
 
-func TestAliasStatus_Diff_New_Index(t *testing.T) {
+func TestAliasStatus_GetDifference_New_Index(t *testing.T) {
 
 	getter := func(string, string, string) ([]byte, error) {
 		return []byte(`{
-	"_all": {
-		"primaries": {
-			"docs": {
-				"count": 2
+			"_all": {
+				"primaries": {
+					"docs": {
+						"count": 2
+					}
+				}
 			}
-		}
-	}
-}`), nil
+		}`), nil
 	}
 
 	ag := NewAliasGetter("foo", "bar", "asd", getter)
@@ -151,17 +155,17 @@ func TestAliasStatus_Diff_New_Index(t *testing.T) {
 	newStatus := models.AliasStatus{Name: "foo", Index: "bar-1", DocCount: 1, Getter: ag}
 	oldStatus := models.AliasStatus{Name: "foo", Index: "bar-2", DocCount: 2, Getter: ag}
 
-	count, err := newStatus.Diff(oldStatus)
+	difference, err := newStatus.GetDifference(oldStatus)
 	if err != nil {
-		t.Error("Error diffing: ", err)
+		t.Error("Error GetDifferenceing: ", err)
 	}
 
-	if count != 1 {
-		t.Error("Incorrect count diff, expected ", 1, "received: ", count)
+	if difference.Docs != 1 {
+		t.Error("Incorrect count GetDifference, expected ", 1, "received: ", difference.Docs)
 	}
 }
 
-func TestAliasStatus_Diff_Different_Aliases(t *testing.T) {
+func TestAliasStatus_GetDifference_Different_Aliases(t *testing.T) {
 	getter := func(string, string, string) ([]byte, error) {
 		return []byte(`{}`), nil
 	}
@@ -171,9 +175,9 @@ func TestAliasStatus_Diff_Different_Aliases(t *testing.T) {
 	a := models.AliasStatus{Name: "anything", Index: "bar", DocCount: 1, Getter: ag}
 	b := models.AliasStatus{Name: "foo", Index: "bar", DocCount: 2, Getter: ag}
 
-	_, err := a.Diff(b)
+	_, err := a.GetDifference(b)
 
 	if err == nil {
-		t.Error("Expected error, but not received during diff of different alias names")
+		t.Error("Expected error, but not received during GetDifference of GetDifferenceerent alias names")
 	}
 }
