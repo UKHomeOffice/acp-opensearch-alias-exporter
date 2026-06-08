@@ -70,7 +70,7 @@ func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 	if callCount != 3 {
 		t.Error("Error. Did not make expected nuo. of API calls. Returned:", callCount, "; Expected: 3")
 	}
-	
+
 	if alias.DocCount != 27178086 {
 		t.Error("Error. Did not return expected DocCount value. Returned:", alias.DocCount, " expected 27178086")
 	}

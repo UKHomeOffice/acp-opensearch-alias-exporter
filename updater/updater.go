@@ -22,6 +22,19 @@ func NewPrometheusUpdater(namespace, name, help string) models.Updater {
 	return &PrometheusUpdater{gaugeVec: promAliasRate}
 }
 
+var HealthMap = map[string]float64{
+	"green":  0.0,
+	"yellow": 0.5,
+	"red":    1.0,
+}
+
+func (p *PrometheusUpdater) UpdateHealth(aliasStatuses models.AliasStatuses) {
+	for _, aliasStatus := range aliasStatuses {
+		health := HealthMap[aliasStatus.Health]
+		p.gaugeVec.WithLabelValues(aliasStatus.Name).Set(health)
+	}
+}
+
 func (p *PrometheusUpdater) UpdateRolloverAttemptFailures(aliasStatuses models.AliasStatuses) {
 	for _, aliasStatus := range aliasStatuses {
 		health := 0

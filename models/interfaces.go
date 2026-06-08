@@ -1,6 +1,7 @@
 package models
 
 type Updater interface {
+	UpdateHealth(aliasStatuses AliasStatuses)
 	UpdateRolloverAttemptFailures(aliasStatuses AliasStatuses)
 	UpdateDocsAddedRate([]StatusChange)
 	UpdateIndexOperationFailures(statusChanges []StatusChange)

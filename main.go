@@ -39,9 +39,10 @@ func start() {
 		panic(err)
 	}
 
-	prometheusAliasRateUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rate", "tracks rate of new documents added to alias")
+	prometheusHealthUpdater := updater.NewPrometheusUpdater("opensearch", "alias_index_health", "tracks health of index based on whether primary shards and their replicas are allocated to nodes.")
 	prometheusRolloverAttemptUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rollover_attempt_health", "tracks index rollover attempt failures")
 	prometheusIndexOperationFailureUpdater := updater.NewPrometheusUpdater("opensearch", "alias_index_operation_failures", "tracks failed index operations")
+	prometheusAliasRateUpdater := updater.NewPrometheusUpdater("opensearch", "alias_rate", "tracks rate of new documents added to alias")
 
 	t := time.NewTicker(time.Minute)
 	for {
@@ -50,6 +51,7 @@ func start() {
 		if err != nil {
 			panic(err)
 		}
+		prometheusHealthUpdater.UpdateHealth(newAliasStatuses)
 		prometheusRolloverAttemptUpdater.UpdateRolloverAttemptFailures(newAliasStatuses)
 
 		statusChanges, err := models.GetStatusChanges(oldAliasStatuses, newAliasStatuses)
