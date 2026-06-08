@@ -24,17 +24,38 @@ func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 				}
 			}`), nil
 		}
-		return []byte(`{
-			"foo-1": {
-				"action" : {
-					"name" : "rollover",
-					"start_time" : 1667411127803,
-					"index" : 0,
-					"failed" : false,
-					"consumed_retries" : 0,
-					"last_retry_time" : 0
+		if callCount == 2 {
+			return []byte(`{
+				"foo-1": {
+					"action" : {
+						"name" : "rollover",
+						"start_time" : 1667411127803,
+						"index" : 0,
+						"failed" : false,
+						"consumed_retries" : 0,
+						"last_retry_time" : 0
+					}
 				}
-			}
+			}`), nil
+		}
+		return []byte(`{
+			"cluster_name" : "658718335966:acp-prod-logging-v2",
+			"status" : "green",
+			"timed_out" : false,
+			"number_of_nodes" : 11,
+			"number_of_data_nodes" : 8,
+			"discovered_master" : true,
+			"discovered_cluster_manager" : true,
+			"active_primary_shards" : 2,
+			"active_shards" : 4,
+			"relocating_shards" : 0,
+			"initializing_shards" : 0,
+			"unassigned_shards" : 0,
+			"delayed_unassigned_shards" : 0,
+			"number_of_pending_tasks" : 0,
+			"number_of_in_flight_fetch" : 0,
+			"task_max_waiting_in_queue_millis" : 0,
+			"active_shards_percent_as_number" : 100.0
 		}`), nil
 	}
 
@@ -46,6 +67,10 @@ func TestAliasgetter_GetAliasWithFailures(t *testing.T) {
 		t.Error("Error while getting test alias.", err.Error())
 	}
 
+	if callCount != 3 {
+		t.Error("Error. Did not make expected nuo. of API calls. Returned:", callCount, "; Expected: 3")
+	}
+	
 	if alias.DocCount != 27178086 {
 		t.Error("Error. Did not return expected DocCount value. Returned:", alias.DocCount, " expected 27178086")
 	}
@@ -71,23 +96,44 @@ func TestAliasgetter_GetAliasWithoutFailures(t *testing.T) {
 							"count": 27178086
 						},
 						"indexing": {
-							"index_failed": 1
+							"index_failed": 0
 						}	
 					}
 				}
 			}`), nil
 		}
-		return []byte(`{
-			"foo-1": {
-				"action" : {
-					"name" : "rollover",
-					"start_time" : 1667411127803,
-					"index" : 0,
-					"failed" : true,
-					"consumed_retries" : 0,
-					"last_retry_time" : 0
+		if callCount == 2 {
+			return []byte(`{
+				"foo-1": {
+					"action" : {
+						"name" : "rollover",
+						"start_time" : 1667411127803,
+						"index" : 0,
+						"failed" : false,
+						"consumed_retries" : 0,
+						"last_retry_time" : 0
+					}
 				}
-			}
+			}`), nil
+		}
+		return []byte(`{
+			"cluster_name" : "658718335966:acp-prod-logging-v2",
+			"status" : "green",
+			"timed_out" : false,
+			"number_of_nodes" : 11,
+			"number_of_data_nodes" : 8,
+			"discovered_master" : true,
+			"discovered_cluster_manager" : true,
+			"active_primary_shards" : 2,
+			"active_shards" : 4,
+			"relocating_shards" : 0,
+			"initializing_shards" : 0,
+			"unassigned_shards" : 0,
+			"delayed_unassigned_shards" : 0,
+			"number_of_pending_tasks" : 0,
+			"number_of_in_flight_fetch" : 0,
+			"task_max_waiting_in_queue_millis" : 0,
+			"active_shards_percent_as_number" : 100.0
 		}`), nil
 	}
 
@@ -103,17 +149,17 @@ func TestAliasgetter_GetAliasWithoutFailures(t *testing.T) {
 		t.Error("Error not the correct DocCount got: ", alias.DocCount, " expected 27178086")
 	}
 
-	if alias.FailedIndexOperations != 1 {
-		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 1")
+	if alias.FailedIndexOperations != 0 {
+		t.Error("Error. Did not return expected FailedIndexOperations value. Returned: ", alias.FailedIndexOperations, " expected 0")
 	}
 
-	if !alias.RolloverAttemptFailed {
-		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected true")
+	if alias.RolloverAttemptFailed {
+		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected false")
 	}
 }
 
-func TestAliasgetter_GetAlias_urls_called(t *testing.T) {
-	expected_urls := []string{"foo/foo-1/_stats", "foo/_plugins/_ism/explain/foo-1"}
+func TestAliasgetter_GetAlias_urls_called_and_health(t *testing.T) {
+	expected_urls := []string{"foo/foo-1/_stats", "foo/_plugins/_ism/explain/foo-1", "foo/_cluster/health/foo-1"}
 	var urls_called []string
 	callCount := 0
 	getter := func(url string, name string, password string) ([]byte, error) {
@@ -133,17 +179,38 @@ func TestAliasgetter_GetAlias_urls_called(t *testing.T) {
 				}
 			}`), nil
 		}
-		return []byte(`{
-			"foo-1": {
-				"action" : {
-					"name" : "rollover",
-					"start_time" : 1667411127803,
-					"index" : 0,
-					"failed" : false,
-					"consumed_retries" : 0,
-					"last_retry_time" : 0
+		if callCount == 2 {
+			return []byte(`{
+				"foo-1": {
+					"action" : {
+						"name" : "rollover",
+						"start_time" : 1667411127803,
+						"index" : 0,
+						"failed" : false,
+						"consumed_retries" : 0,
+						"last_retry_time" : 0
+					}
 				}
-			}
+			}`), nil
+		}
+		return []byte(`{
+			"cluster_name" : "658718335966:acp-prod-logging-v2",
+			"status" : "green",
+			"timed_out" : false,
+			"number_of_nodes" : 11,
+			"number_of_data_nodes" : 8,
+			"discovered_master" : true,
+			"discovered_cluster_manager" : true,
+			"active_primary_shards" : 2,
+			"active_shards" : 4,
+			"relocating_shards" : 0,
+			"initializing_shards" : 0,
+			"unassigned_shards" : 0,
+			"delayed_unassigned_shards" : 0,
+			"number_of_pending_tasks" : 0,
+			"number_of_in_flight_fetch" : 0,
+			"task_max_waiting_in_queue_millis" : 0,
+			"active_shards_percent_as_number" : 100.0
 		}`), nil
 	}
 
@@ -155,8 +222,8 @@ func TestAliasgetter_GetAlias_urls_called(t *testing.T) {
 		t.Error("Error while getting test alias.", err.Error())
 	}
 
-	if alias.RolloverAttemptFailed {
-		t.Error("Error. Did not return expected RolloverAttemptFailed value. Returned: ", alias.RolloverAttemptFailed, " expected false")
+	if alias.Health != "green" {
+		t.Error("Error. Did not return expected Health value. Returned: ", alias.Health, "; Expected: green")
 	}
 
 	if !slices.Equal(urls_called, expected_urls) {
@@ -189,16 +256,55 @@ func TestAliasStatus_GetDifference_Same_Index(t *testing.T) {
 }
 
 func TestAliasStatus_GetDifference_New_Index(t *testing.T) {
-
+	callCount := 0
 	getter := func(string, string, string) ([]byte, error) {
-		return []byte(`{
-			"_all": {
-				"primaries": {
-					"docs": {
-						"count": 2
+		callCount++
+		if callCount == 1 {
+			return []byte(`{
+				"_all": {
+					"primaries": {
+						"docs": {
+							"count": 2
+						},
+						"indexing": {
+							"index_failed": 0
+						}	
 					}
 				}
-			}
+			}`), nil
+		}
+		if callCount == 2 {
+			return []byte(`{
+				"foo-1": {
+					"action" : {
+						"name" : "rollover",
+						"start_time" : 1667411127803,
+						"index" : 0,
+						"failed" : false,
+						"consumed_retries" : 0,
+						"last_retry_time" : 0
+					}
+				}
+			}`), nil
+		}
+		return []byte(`{
+			"cluster_name" : "658718335966:acp-prod-logging-v2",
+			"status" : "green",
+			"timed_out" : false,
+			"number_of_nodes" : 11,
+			"number_of_data_nodes" : 8,
+			"discovered_master" : true,
+			"discovered_cluster_manager" : true,
+			"active_primary_shards" : 2,
+			"active_shards" : 4,
+			"relocating_shards" : 0,
+			"initializing_shards" : 0,
+			"unassigned_shards" : 0,
+			"delayed_unassigned_shards" : 0,
+			"number_of_pending_tasks" : 0,
+			"number_of_in_flight_fetch" : 0,
+			"task_max_waiting_in_queue_millis" : 0,
+			"active_shards_percent_as_number" : 100.0
 		}`), nil
 	}
 

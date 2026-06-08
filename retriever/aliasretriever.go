@@ -34,23 +34,28 @@ type aliasgetter struct {
 }
 
 func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, error) {
-	stats_url := fmt.Sprintf("%s/%s/_stats", a.host, index)
-	stats_body, stats_err := a.getter(stats_url, a.username, a.password) // example response: https://docs.opensearch.org/2.19/api-reference/index-apis/stats/#example-response
-
-	var stats Stats
-	stats_err = json.Unmarshal(stats_body, &stats)
-	if stats_err != nil {
-		return models.AliasStatus{}, stats_err
+	// Gets docs and index operation failures from _stats
+	statsUrl := fmt.Sprintf("%s/%s/_stats", a.host, index)
+	statsBody, statsErr := a.getter(statsUrl, a.username, a.password) // https://docs.opensearch.org/2.19/api-reference/index-apis/stats/#example-response
+	if statsErr != nil {
+		return models.AliasStatus{}, statsErr
 	}
 
-	ism_url := fmt.Sprintf("%s/_plugins/_ism/explain/%s", a.host, index)
-	ism_body, err := a.getter(ism_url, a.username, a.password) // example response: https://docs.opensearch.org/2.19/im-plugin/ism/api/#example-response-12
+	var stats Stats
+	statsErr = json.Unmarshal(statsBody, &stats)
+	if statsErr != nil {
+		return models.AliasStatus{}, statsErr
+	}
+
+	// Gets rolloever attempt failures from _ism
+	ismUrl := fmt.Sprintf("%s/_plugins/_ism/explain/%s", a.host, index)
+	ismBody, err := a.getter(ismUrl, a.username, a.password) // https://docs.opensearch.org/2.19/im-plugin/ism/api/#example-response-12
 	if err != nil {
 		return models.AliasStatus{}, err
 	}
 
 	var ismResponse map[string]json.RawMessage
-	if err := json.Unmarshal(ism_body, &ismResponse); err != nil {
+	if err := json.Unmarshal(ismBody, &ismResponse); err != nil {
 		return models.AliasStatus{}, err
 	}
 
@@ -61,6 +66,27 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 		}
 	}
 
+	// Gets index health from _cluster/health/
+	healthUrl := fmt.Sprintf("%s/_cluster/health/%s", a.host, index)
+	healthBody, err := a.getter(healthUrl, a.username, a.password) // https://docs.opensearch.org/2.19/api-reference/cluster-api/cluster-health/#example-response
+	if err != nil {
+		return models.AliasStatus{}, err
+	}
+
+	var healthResponse map[string]json.RawMessage
+	if err := json.Unmarshal(healthBody, &healthResponse); err != nil {
+		return models.AliasStatus{}, err
+	}
+
+	var health string
+	raw, ok := healthResponse["status"]
+	if !ok {
+		return models.AliasStatus{}, fmt.Errorf("status field not found in health response")
+	}
+	if err := json.Unmarshal(raw, &health); err != nil {
+		return models.AliasStatus{}, err
+	}
+
 	alias := models.AliasStatus{
 		DocCount:              stats.All.Primaries.Docs.Count,
 		FailedIndexOperations: stats.All.Primaries.Indexing.IndexFailed,
@@ -68,7 +94,9 @@ func (a *aliasgetter) GetAlias(index string, name string) (models.AliasStatus, e
 		Index:                 index,
 		Name:                  name,
 		Getter:                a,
+		Health:                health,
 	}
+
 	return alias, nil
 }
 
