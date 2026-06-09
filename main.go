@@ -56,7 +56,7 @@ func start() {
 
 		statusChanges, err := models.GetStatusChanges(oldAliasStatuses, newAliasStatuses)
 		if err != nil {
-			log.Println("Error getting count rates", err)
+			log.Println("Error getting status changes", err)
 		}
 		prometheusAliasRateUpdater.UpdateDocsAddedRate(statusChanges)
 		prometheusIndexOperationFailureUpdater.UpdateIndexOperationFailures(statusChanges)
