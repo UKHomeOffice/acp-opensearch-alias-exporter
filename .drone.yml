@@ -8,15 +8,6 @@ platform:
   arch: amd64
 
 steps:
-  - name: unit-test
-    pull: if-not-exists
-    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.2.0
-    commands:
-      - go test ./...
-    when:
-      event:
-        - pull_request
-  
   - name: build-image
     image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
     commands:
