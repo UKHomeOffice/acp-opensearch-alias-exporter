@@ -36,8 +36,8 @@ type Difference struct {
 }
 
 // GetDifference compares two AliasStatus objects representing the current and previous alias snapshots.
-// If the write index has moved between snapshots it updates the old snapshot to the final values for that index
-// and includes any increases between and the original previous snapshot and the updated previous snapshot in the
+// If the write index has moved between snapshots, it updates the old snapshot to the final values for that index
+// and includes any increases between the original (old) snapshot and the updated (old) snapshot in the
 // returned Difference.
 // Returns:
 //   - (if names don't match) err("Cannot compare two different aliases")
