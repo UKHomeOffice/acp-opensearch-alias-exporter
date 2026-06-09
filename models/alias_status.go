@@ -3,39 +3,67 @@ package models
 import "errors"
 
 type AliasStatus struct {
-	Count  int
-	Size   int
-	Failed bool
-	Index  string
-	Name   string
-	Getter AliasGetter
+	DocCount              int
+	Size                  int
+	FailedIndexOperations int
+	RolloverAttemptFailed bool
+	Index                 string
+	Name                  string
+	Getter                AliasGetter
+	Health                string
 }
 
 type AliasStatuses map[string]AliasStatus
 
+// Refresh() calls GetAlias() and updates the AliasStatus object's DocCount and FailedIndexOperations values
+// to the latest stats for that particular index.
+// Returns:
+//   - (if err calling .GetAlias()) err from .GetAlias()
+//   - nil
 func (a *AliasStatus) Refresh() error {
-	as, err := a.Getter.GetAlias(a.Index, a.Name)
+	latestStatus, err := a.Getter.GetAlias(a.Index, a.Name)
 	if err != nil {
 		return err
 	}
-	a.Count = as.Count
+	a.DocCount = latestStatus.DocCount
+	a.FailedIndexOperations = latestStatus.FailedIndexOperations
 	return nil
 }
 
-func (a AliasStatus) Diff(old AliasStatus) (int, error) {
+type Difference struct {
+	Docs                  int
+	FailedIndexOperations int
+}
+
+// GetDifference compares two AliasStatus objects representing the current and previous alias snapshots.
+// If the write index has moved between snapshots, it updates the old snapshot to the final values for that index
+// and includes any increases between the original (old) snapshot and the updated (old) snapshot in the
+// returned Difference.
+// Returns:
+//   - (if names don't match) err("Cannot compare two different aliases")
+//   - (if Refresh methods fails) err from .Refresh()
+//   - a Difference object representing the docs added and any new failed index operations between the two snapshots.
+func (a AliasStatus) GetDifference(old AliasStatus) (Difference, error) {
 	if a.Name != old.Name {
-		return 0, errors.New("Cannot compare two different aliases")
+		return Difference{}, errors.New("Cannot compare two different aliases")
 	}
 
 	if a.Index != old.Index {
-		oldCount := old.Count
+		oldDocCount := old.DocCount
+		oldIndexFailureCount := old.FailedIndexOperations
 		err := old.Refresh()
 		if err != nil {
-			return 0, err
+			return Difference{}, err
 		}
 
-		return (old.Count - oldCount) + a.Count, nil
+		return Difference{
+			Docs:                  (old.DocCount - oldDocCount) + a.DocCount,
+			FailedIndexOperations: (old.FailedIndexOperations - oldIndexFailureCount) + a.FailedIndexOperations,
+		}, nil
 	}
 
-	return a.Count - old.Count, nil
+	return Difference{
+		Docs:                  a.DocCount - old.DocCount,
+		FailedIndexOperations: a.FailedIndexOperations - old.FailedIndexOperations,
+	}, nil
 }
