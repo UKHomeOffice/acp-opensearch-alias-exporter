@@ -8,6 +8,14 @@ platform:
   arch: amd64
 
 steps:
+  - name: unit-test
+    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.0.0
+    commands:
+      - go test ./...
+    when:
+      event:
+        - pull_request
+  
   - name: build-image
     image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
     commands:
@@ -44,8 +52,6 @@ steps:
         from_secret: QUAY_TOKEN
       DOCKER_USERNAME: ukhomeofficedigital+acp_opensearch_alias_exporter
     when:
-      branch:
-        - main
       event:
         - tag
 
