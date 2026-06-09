@@ -10,7 +10,7 @@ platform:
 steps:
   - name: unit-test
     pull: if-not-exists
-    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.1.0
+    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.2.0
     commands:
       - go test ./...
     when:
