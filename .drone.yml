@@ -9,9 +9,8 @@ platform:
 
 steps:
   - name: unit-test
-    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.0.0
-    runAsUser: 1000
-    runAsGroup: 1000
+    pull: if-not-exists
+    image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/go:v1.1.0
     commands:
       - go test ./...
     when:
