@@ -44,8 +44,6 @@ steps:
         from_secret: QUAY_TOKEN
       DOCKER_USERNAME: ukhomeofficedigital+acp_opensearch_alias_exporter
     when:
-      branch:
-        - main
       event:
         - tag
 
